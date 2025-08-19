@@ -1,4 +1,5 @@
 import pygame, pyscroll, pytmx
+from joueur import Joueur
 
 
 class Game:
@@ -19,12 +20,24 @@ class Game:
         map_layer = pyscroll.orthographic.BufferedRenderer(map_data,self.screen.get_size())
 
         #Display la carte
-        self.group = pyscroll.PyscrollGroup(map_layer = map_layer, default_layer=1)
+        self.group = pyscroll.PyscrollGroup(map_layer = map_layer, default_layer=3)
+
+        #Récupérer le point de pop du joueur
+        pop_point = tmx_data.get_object_by_name("joueur_pop")
+
+        #Crée un joueur
+        self.joueur = Joueur(pop_point.x, pop_point.y)
+
+        #Ajouter le joueur au groupe de calque
+        self.group.add(self.joueur)
 
     def run(self):
         #Maintenir la fenêtre ouverte
         running = True
         while(running):
+        
+            #Update le group (appelle update sur chaque élément du sprite)
+            self.group.update()
 
             #Desisner le carte 
             self.group.draw(self.screen)
