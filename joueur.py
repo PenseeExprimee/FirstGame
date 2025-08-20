@@ -12,6 +12,14 @@ class Joueur(pygame.sprite.Sprite):
         #Image du perso
         self.image = self.get_image(0,0)
 
+        #Différentes directions du personnage
+        self.images = {
+            "UP": self.get_image(0,96),
+            "DOWN": self.get_image(0,0),
+            "LEFT": self.get_image(0,32),
+            "RIGHT": self.get_image(0,64),
+        }
+
         #Enlever le background noir
         self.image.set_colorkey([0,0,0])
 
@@ -28,3 +36,9 @@ class Joueur(pygame.sprite.Sprite):
    
     def update(self):
         self.rect.topleft = self.position
+
+    def tourner_perso(self, direction):
+        self.image = self.images[direction]
+
+        #Enlever le background noir
+        self.image.set_colorkey([0,0,0])

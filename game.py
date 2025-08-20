@@ -28,14 +28,24 @@ class Game:
         #Crée un joueur
         self.joueur = Joueur(pop_point.x, pop_point.y)
 
+        #Vitesse du joueur
+        self.speed = 2
+
         #Ajouter le joueur au groupe de calque
         self.group.add(self.joueur)
 
     def run(self):
         #Maintenir la fenêtre ouverte
         running = True
+
+        #Définir une clock
+        clock = pygame.time.Clock() 
+
         while(running):
-        
+
+            #Bouger le perso
+            self.handle_input()
+
             #Update le group (appelle update sur chaque élément du sprite)
             self.group.update()
 
@@ -44,9 +54,38 @@ class Game:
             pygame.display.flip()
 
 
+            #FPS
+            clock.tick(60)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
         pygame.quit()
     
+
+    def handle_input(self):
+        pressed_key_list = pygame.key.get_pressed()
+    
+        if pressed_key_list[pygame.K_UP]:
+            self.move_up()
+        elif pressed_key_list[pygame.K_DOWN]:
+            self.move_down()
+        elif pressed_key_list[pygame.K_LEFT]:
+            self.move_left()
+        elif pressed_key_list[pygame.K_RIGHT]:
+            self.move_right()
+    
+    def move_left(self):
+        self.joueur.tourner_perso("LEFT")
+        self.joueur.position[0] -= self.speed
+    def move_right(self):
+        self.joueur.tourner_perso("RIGHT")
+        self.joueur.position[0] += self.speed
+    def move_up(self):
+        self.joueur.tourner_perso("UP")
+        self.joueur.position[1] -= self.speed
+    def move_down(self):
+        self.joueur.tourner_perso("DOWN")
+        self.joueur.position[1] += self.speed
+        
+                
