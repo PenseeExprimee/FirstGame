@@ -25,6 +25,12 @@ class Joueur(pygame.sprite.Sprite):
 
         #Position du joueur (représenté par un rectangle)
         self.rect = self.image.get_rect()
+
+        #Pieds du joueur
+        self.pieds_joueur = pygame.Rect(0,0, self.rect.width*0.5, 12)
+
+        #Sauvegarde de la position du joueur
+        self.old_position = self.rect.copy()
     
     def get_image(self,x,y):
         #Récupérer un bout de la sprite sheet
@@ -33,9 +39,24 @@ class Joueur(pygame.sprite.Sprite):
 
         return personage_image
     
+    def save_old_position(self):
+        self.old_position = self.position.copy()
+
+    def move_back(self):
+
+        #Update la position de joueur, retour à la position précédente
+        self.position = self.old_position
+        #Retour du rectangle du joueur à la position précéddente
+        self.rect.topleft = self.position
+        #Re aligner les pieds du joueur avec le bas du rectangle
+        self.pieds_joueur.midbottom = self.rect.midbottom
    
     def update(self):
+        #Bouger le rectangle du joueur
         self.rect.topleft = self.position
+
+        #Aligner le bas du rectangle représentant le joueur avec le rectangle représentant les pieds du joueur
+        self.pieds_joueur.midbottom = self.rect.midbottom
 
     def tourner_perso(self, direction):
         self.image = self.images[direction]

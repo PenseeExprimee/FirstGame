@@ -22,9 +22,17 @@ class Game:
         #Display la carte
         self.group = pyscroll.PyscrollGroup(map_layer = map_layer, default_layer=3)
 
+        #Les murs
+        self.walls = []
+
+        for colllide_objects in tmx_data.objects:
+            if colllide_objects.name == "collision":
+                #Ajouter le rectangle correspondant à l'objet dans la liste.
+                self.walls.append(pygame.Rect(colllide_objects.x,colllide_objects.y, colllide_objects.width, colllide_objects.height))
+        print("This is the collide list: ", self.walls)
+
         #Récupérer le point de pop du joueur
         pop_point = tmx_data.get_object_by_name("joueur_pop")
-
         #Crée un joueur
         self.joueur = Joueur(pop_point.x, pop_point.y)
 
@@ -42,12 +50,18 @@ class Game:
         clock = pygame.time.Clock() 
 
         while(running):
+            
+            #Centrer la caméra sur le joueur (le centre du rectangle représentant le joueur)
+            self.group.center(self.joueur.rect.center)
+            
+            #Sauvegarder la position du joueur
+            self.joueur.save_old_position()
 
             #Bouger le perso
             self.handle_input()
 
             #Update le group (appelle update sur chaque élément du sprite)
-            self.group.update()
+            self.update()
 
             #Desisner le carte 
             self.group.draw(self.screen)
@@ -62,6 +76,15 @@ class Game:
                     running = False
         pygame.quit()
     
+    #Méthode pour update le groupe et gérer les collisions
+    def update(self):
+        #Update du group
+        self.group.update()
+
+        #Gestion des collisions
+        for sprite in self.group.sprites():
+            if(sprite.pieds_joueur.collidelist(self.walls) > -1):
+                sprite.move_back()
 
     def handle_input(self):
         pressed_key_list = pygame.key.get_pressed()
