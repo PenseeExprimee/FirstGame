@@ -20,7 +20,7 @@ class Game:
         map_layer = pyscroll.orthographic.BufferedRenderer(map_data,self.screen.get_size())
 
         #Display la carte
-        self.group = pyscroll.PyscrollGroup(map_layer = map_layer, default_layer=3)
+        self.group = pyscroll.PyscrollGroup(map_layer = map_layer, default_layer=5)
 
         #Les murs
         self.walls = []
@@ -29,7 +29,6 @@ class Game:
             if colllide_objects.name == "collision":
                 #Ajouter le rectangle correspondant à l'objet dans la liste.
                 self.walls.append(pygame.Rect(colllide_objects.x,colllide_objects.y, colllide_objects.width, colllide_objects.height))
-        print("This is the collide list: ", self.walls)
 
         #Récupérer le point de pop du joueur
         pop_point = tmx_data.get_object_by_name("joueur_pop")
@@ -42,6 +41,15 @@ class Game:
         #Ajouter le joueur au groupe de calque
         self.group.add(self.joueur)
 
+        #HORS DE LA MAISON
+        #Récupérer le point d'entrée de la maison
+        enter_house_rect = tmx_data.get_object_by_name("enter_house")
+        self.enter_house_rect = pygame.Rect(enter_house_rect.x, enter_house_rect.y, enter_house_rect.width, enter_house_rect.height)
+        print("self enter house rect: ", self.enter_house_rect)
+
+        self.exit_house_rect = pygame.Rect(0,0,0,0)
+
+
     def run(self):
         #Maintenir la fenêtre ouverte
         running = True
@@ -53,7 +61,7 @@ class Game:
             
             #Centrer la caméra sur le joueur (le centre du rectangle représentant le joueur)
             self.group.center(self.joueur.rect.center)
-            
+
             #Sauvegarder la position du joueur
             self.joueur.save_old_position()
 
@@ -83,8 +91,79 @@ class Game:
 
         #Gestion des collisions
         for sprite in self.group.sprites():
+            #Collision avec les rectangles de collision classiques
             if(sprite.pieds_joueur.collidelist(self.walls) > -1):
                 sprite.move_back()
+
+            #Collision avec la maison (exterieur vers interieur)
+            if(sprite.pieds_joueur.colliderect(self.enter_house_rect)):
+                #fonction pour rentrer dans la maison
+                print("switch in called")
+                self.switch_in_house()
+            #Interieur vs extérieur
+            if(sprite.pieds_joueur.colliderect(self.exit_house_rect)):
+                #fonction pour rentrer dans la maison
+                self.switch_out_house()
+    
+    def switch_in_house(self):
+        
+        tmx_data = pytmx.util_pygame.load_pygame('house.tmx')
+        map_data = pyscroll.data.TiledMapData(tmx_data)
+        map_layer = pyscroll.orthographic.BufferedRenderer(map_data, self.screen.get_size())
+        
+        #House (getting outside)
+        exit_house = tmx_data.get_object_by_name("exit_house")
+        self.exit_house_rect = pygame.Rect(exit_house.x, exit_house.y, exit_house.width, exit_house.height) 
+
+        #Dessiner le groupe de calque
+        self.group = pyscroll.PyscrollGroup(map_layer = map_layer, default_layer = 5)
+
+        #Crée un joueur 
+        #Point de pop du joueur sur la carte
+        joueur_position = tmx_data.get_object_by_name("house_spawn")
+        self.joueur = Joueur(position_x = joueur_position.x, position_y = joueur_position.y)
+
+
+        #Ajouter le joueur au groupe de calque
+        self.group.add(self.joueur)
+
+        #Gestion des collisions
+        self.walls = []
+
+        for objects in tmx_data.objects:
+            if objects.name == "collision":
+                #Ajouter le rectangle à la liste
+                self.walls.append(pygame.Rect(objects.x,objects.y,objects.width, objects.height))
+
+    def switch_out_house(self):
+        
+        tmx_data = pytmx.util_pygame.load_pygame('map.tmx')
+        map_data = pyscroll.data.TiledMapData(tmx_data)
+        map_layer = pyscroll.orthographic.BufferedRenderer(map_data, self.screen.get_size())
+        
+        #House (getting outside)
+        exit_house = tmx_data.get_object_by_name("enter_house")
+        self.exit_house_rect = pygame.Rect(exit_house.x, exit_house.y, exit_house.width, exit_house.height) 
+
+        #Dessiner le groupe de calque
+        self.group = pyscroll.PyscrollGroup(map_layer = map_layer, default_layer = 5)
+
+        #Crée un joueur 
+        #Point de pop du joueur sur la carte
+        joueur_position = tmx_data.get_object_by_name("enter_house_exit")
+        self.joueur = Joueur(position_x = joueur_position.x, position_y = joueur_position.y)
+
+
+        #Ajouter le joueur au groupe de calque
+        self.group.add(self.joueur)
+
+        #Gestion des collisions
+        self.walls = []
+
+        for objects in tmx_data.objects:
+            if objects.name == "collision":
+                #Ajouter le rectangle à la liste
+                self.walls.append(pygame.Rect(objects.x,objects.y,objects.width, objects.height))
 
     def handle_input(self):
         pressed_key_list = pygame.key.get_pressed()
